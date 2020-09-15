@@ -1,0 +1,101 @@
+2019 ccpc-江西省赛 Cotree
+
+#include <iostream>
+#include <map>
+#include <vector>
+#include <queue>
+#include <string>
+#include <set>
+#include <algorithm>
+#include <cstring>
+#include <string>
+#include <vector>
+#include <map>
+#include <set>
+#include <list>
+#include <deque>
+#include <queue>
+#include <stack>
+#include <cstdlib>
+#include <cstdio>
+#include <cmath>
+#include <iomanip>
+#pragma GCC optimize(2)
+#define ll long long
+#define ull unsigned long long
+using namespace std;
+template <class T>
+void rd(T &x){
+    x = 0 ;T flag = 1 ;char ch = getchar();
+    while(!isdigit(ch)) { if(ch=='-') flag = -1 ; ch = getchar() ; }
+    while(isdigit(ch)) { x = (x<<1) + (x<<3) + (ch^48) ; ch = getchar(); }
+    x*= flag ;
+}
+const int INF=0x3f3f3f3f;
+const int mxn = 1e5+7;
+ll t,n,m,k,cnt,node_1,node_2,ans_1,ans_2,mn_son = 0 , mn_node = 0 , res , ans ;
+int head[mxn<<2] , to[mxn<<2] , nx[mxn<<2] ,deg[mxn<<2] ;
+int vis[mxn<<2] ;
+void add(int u,int v){ to[cnt] = v , nx[cnt] = head[u] , head[u] = cnt++; }
+void DFS_INIT(int x) /// 计算两颗子树的节点数量
+{
+    if(vis[x]) return ;
+    res++; vis[x] = 1 ;
+    for(int i=head[x];~i;i=nx[i]) if(!vis[to[i]]) DFS_INIT(to[i]); /// 
+}
+void DFS(int x,int par,int n)
+{
+    deg[x]=1; int mx_son = 0 ;
+    for(int i=head[x];~i;i=nx[i]){
+        int v = to[i] ;
+        if(v==par) continue;
+        DFS(v,x,n);
+        deg[x] += deg[v] ;
+        mx_son = max(mx_son , deg[v]);/// 子树的最大节点个数
+    }
+    mx_son = max(mx_son,n-deg[x]); /// 子树的最大节点个数
+    if( mx_son < mn_son ){
+        mn_son = mx_son , mn_node = x ;
+    }
+}
+void DFS_END(int x,int par)
+{
+    deg[x] = 1 ;
+    for(int i=head[x];~i;i=nx[i]){
+        int v = to[i] ;
+        if(v==par) continue;
+        DFS_END(v,x) ;
+        deg[x] += deg[v];
+        ans+=(ll)(deg[v])*(ll)(n-deg[v]);
+    }
+}
+int main()
+{
+    while(~scanf("%lld",&n)){
+        cnt = 0 ;
+        memset(deg,0,sizeof(deg));
+        memset(head,-1,sizeof(head));
+        for(int i=1,u,v;i<=n-2;i++){
+            rd(u) , rd(v) ;
+            add(u,v) , add(v,u) ;
+        }
+        memset(vis,0,sizeof(vis));
+        int n1 = 0 , n2 = 0 ; res = 0 ;
+        DFS_INIT(1) , node_1 = 1 , n1 = res , res = 0 ;
+        for(int i=1;i<=n;i++){
+            if(!vis[i]) {
+                DFS_INIT(i) , n2 = res , node_2 = i , res = 0 ;
+                break;
+            }
+        }
+        mn_son = INF ; int e1 , e2 ;
+        DFS(node_1,0,n1) , e1 = mn_node ,mn_son = INF ;
+        DFS(node_2,0,n2) , e2 = mn_node ,mn_son = INF ;
+        ///cout<<e1<<" -- "<<e2<<endl;
+        add(e1,e2) , add(e2,e1);
+        ans = 0 ; DFS_END(1,0);
+        printf("%lld\n",ans);
+    }
+    return 0;
+}
+
